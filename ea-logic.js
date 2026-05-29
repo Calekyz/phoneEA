@@ -58,7 +58,7 @@ async function runBotForClient(connection, symbol = 'EURUSD') {
             const prevClose = rates[1].close;
             const currentClose = rates[0].close;
 
-            // Buy signals (price crosses below fib level)
+            // Buy signals
             for (const fib of BUY_FIB_LEVELS) {
                 const fibPrice = recentHigh - fibRange * fib;
                 if (prevClose >= fibPrice && currentClose < fibPrice) {
@@ -68,13 +68,13 @@ async function runBotForClient(connection, symbol = 'EURUSD') {
                     const tpPrice = ask + risk * REWARD_RISK_RATIO;
                     if (slPrice > 0 && slPrice < ask && tpPrice > ask) {
                         await connection.createMarketBuyOrder(symbol, LOT_SIZE, slPrice, tpPrice, { comment: 'Kairon Buy' });
-                        console.log('Buy order placed');
+                        console.log(`Buy order placed on ${symbol}`);
                     }
                     break;
                 }
             }
 
-            // Sell signals (price crosses above fib level)
+            // Sell signals
             for (const fib of SELL_FIB_LEVELS) {
                 const fibPrice = recentHigh - fibRange * fib;
                 if (prevClose <= fibPrice && currentClose > fibPrice) {
@@ -84,7 +84,7 @@ async function runBotForClient(connection, symbol = 'EURUSD') {
                     const tpPrice = bid - risk * REWARD_RISK_RATIO;
                     if (slPrice > bid && tpPrice < bid) {
                         await connection.createMarketSellOrder(symbol, LOT_SIZE, slPrice, tpPrice, { comment: 'Kairon Sell' });
-                        console.log('Sell order placed');
+                        console.log(`Sell order placed on ${symbol}`);
                     }
                     break;
                 }
