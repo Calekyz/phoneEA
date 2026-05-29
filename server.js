@@ -1,6 +1,7 @@
+// server.js
 require('dotenv').config();
 const express = require('express');
-const MetaApi = require('metaapi.cloud-sdk').default;
+const MetaApi = require('metaapi.cloud-sdk');
 const { runBotForClient } = require('./ea-logic');
 const cors = require('cors');
 
@@ -9,7 +10,7 @@ app.use(express.json());
 app.use(cors());
 app.use(express.static('public'));
 
-const metaApi = new MetaApi(process.env.METAAPI_ADMIN_TOKEN);
+const api = new MetaApi(process.env.METAAPI_ADMIN_TOKEN);
 const activeBots = new Map();
 
 app.post('/api/start-bot', async (req, res) => {
@@ -26,11 +27,13 @@ app.post('/api/start-bot', async (req, res) => {
     }
 
     try {
-        let accounts = await metaApi.metatraderAccountApi.getAccounts();
+        // Get existing accounts using the current method
+        const accounts = await api.metatraderAccountApi.getAccountsWithInfiniteScrollPagination();
         let account = accounts.find(a => a.login === login.toString() && a.server === server);
 
         if (!account) {
-            account = await metaApi.metatraderAccountApi.createAccount({
+            // Create a new account if it doesn't exist
+            account = await api.metatraderAccountApi.createAccount({
                 name: `Client ${login}`,
                 type: 'cloud',
                 login: login.toString(),
@@ -41,12 +44,23 @@ app.post('/api/start-bot', async (req, res) => {
                 application: 'KaironSwingMaster'
             });
             console.log(`Created new MetaApi account: ${account.id}`);
+        } else {
+            console.log(`Found existing MetaApi account: ${account.id}`);
+        }
+
+        // Ensure the account is deployed and connected
+        if (!account.connectionStatus || account.connectionStatus !== 'connected') {
+            await account.deploy();
+            await account.waitConnected();
+            console.log(`Account ${login} deployed and connected`);
         }
 
         const connection = account.getStreamingConnection();
         await connection.connect();
+        await connection.waitSynchronized();
         console.log(`Connected to MT5 account ${login}`);
 
+        // Start the bot in the background
         const botPromise = runBotForClient(connection, symbol);
         activeBots.set(accountId, botPromise);
 
