@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Kairon Swing Master – Activate Bot</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body { font-family: Arial; background: #0a0e27; color: white; padding: 20px; }
+        .container { max-width: 400px; margin: auto; background: #1e2434; padding: 25px; border-radius: 12px; }
+        input, button { width: 100%; padding: 12px; margin: 8px 0; border-radius: 6px; border: none; }
+        input { background: #2d3446; color: white; }
+        button { background: #00b4d8; color: white; font-weight: bold; cursor: pointer; }
+        button:hover { background: #0077b6; }
+        .status { margin-top: 15px; text-align: center; }
+        .error { color: #ff6b6b; }
+        .success { color: #4caf50; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Kairon Swing Master</h2>
+        <p>Enter your MT5 account details to activate the bot.</p>
+        <form id="botForm">
+            <input type="text" id="login" placeholder="MT5 Login (number)" required>
+            <input type="password" id="password" placeholder="MT5 Password" required>
+            <input type="text" id="server" placeholder="MT5 Server name" required>
+            <input type="text" id="symbol" placeholder="Symbol (default EURUSD)" value="EURUSD">
+            <button type="submit">Activate Bot</button>
+        </form>
+        <div id="status" class="status"></div>
+    </div>
+    <script>
+        const form = document.getElementById('botForm');
+        const statusDiv = document.getElementById('status');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const login = document.getElementById('login').value;
+            const password = document.getElementById('password').value;
+            const server = document.getElementById('server').value;
+            const symbol = document.getElementById('symbol').value || 'EURUSD';
+
+            statusDiv.innerHTML = 'Starting bot...';
+            statusDiv.className = 'status';
+
+            try {
+                const response = await fetch('/api/start-bot', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ login, password, server, symbol })
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    statusDiv.innerHTML = '✅ Bot activated! It will trade on your account.';
+                    statusDiv.className = 'status success';
+                } else {
+                    statusDiv.innerHTML = '❌ Error: ' + data.error;
+                    statusDiv.className = 'status error';
+                }
+            } catch (err) {
+                statusDiv.innerHTML = '❌ Connection error. Please try again.';
+                statusDiv.className = 'status error';
+            }
+        });
+    </script>
+</body>
+</html>
