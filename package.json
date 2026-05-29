@@ -4,24 +4,16 @@
   "description": "Self‑activate MT5 trading bot via web interface",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "postinstall": "npm audit fix --force || true"
   },
   "dependencies": {
-    "express": "^4.22.1",
-    "metaapi.cloud-sdk": "^29.3.3",
-    "cors": "^2.8.5",
-    "dotenv": "^16.6.1"
+    "express": "4.22.1",
+    "metaapi.cloud-sdk": "29.3.3",
+    "cors": "2.8.5",
+    "dotenv": "16.6.1"
   },
   "engines": {
-    "node": ">=18.0.0"
-  },
-  "overrides": {
-    "braces": "3.0.3",
-    "path-to-regexp": "8.2.0",
-    "ws": "8.18.0",
-    "cross-spawn": "7.0.6",
-    "micromatch": "4.0.8",
-    "send": "0.19.1",
-    "serve-static": "1.16.2"
+    "node": "18.x"
   }
 }
