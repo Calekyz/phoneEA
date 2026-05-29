@@ -1,4 +1,3 @@
-// server.js
 require('dotenv').config();
 const express = require('express');
 const MetaApi = require('metaapi.cloud-sdk');
@@ -20,19 +19,17 @@ app.post('/api/start-bot', async (req, res) => {
         return res.status(400).json({ error: 'Missing MT5 credentials' });
     }
 
-    const accountId = `${login}@${server}`;
+    const accountId = `${login}@${server}:${symbol}`;
 
     if (activeBots.has(accountId)) {
-        return res.json({ message: 'Bot already running for this account' });
+        return res.json({ message: 'Bot already running for this symbol on this account' });
     }
 
     try {
-        // Get existing accounts using the current method
         const accounts = await api.metatraderAccountApi.getAccountsWithInfiniteScrollPagination();
         let account = accounts.find(a => a.login === login.toString() && a.server === server);
 
         if (!account) {
-            // Create a new account if it doesn't exist
             account = await api.metatraderAccountApi.createAccount({
                 name: `Client ${login}`,
                 type: 'cloud',
@@ -48,7 +45,6 @@ app.post('/api/start-bot', async (req, res) => {
             console.log(`Found existing MetaApi account: ${account.id}`);
         }
 
-        // Ensure the account is deployed and connected
         if (!account.connectionStatus || account.connectionStatus !== 'connected') {
             await account.deploy();
             await account.waitConnected();
@@ -60,14 +56,14 @@ app.post('/api/start-bot', async (req, res) => {
         await connection.waitSynchronized();
         console.log(`Connected to MT5 account ${login}`);
 
-        // Start the bot in the background
+        // Start the bot for the specified symbol
         const botPromise = runBotForClient(connection, symbol);
         activeBots.set(accountId, botPromise);
 
-        res.json({ success: true, message: 'Bot started successfully' });
+        res.json({ success: true, message: `Bot started on ${symbol}` });
 
         botPromise.catch(err => {
-            console.error(`Bot crashed for ${login}:`, err);
+            console.error(`Bot crashed for ${login} on ${symbol}:`, err);
             activeBots.delete(accountId);
         });
     } catch (err) {
