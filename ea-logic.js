@@ -1,4 +1,3 @@
-// Kairon Swing Master - Trading Logic (Node.js / MetaApi version)
 const SWING_STRENGTH = 30;
 const LOT_SIZE = 0.05;
 const REWARD_RISK_RATIO = 3.0;
