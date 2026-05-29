@@ -56,7 +56,6 @@ app.post('/api/start-bot', async (req, res) => {
         await connection.waitSynchronized();
         console.log(`Connected to MT5 account ${login}`);
 
-        // Start the bot for the specified symbol
         const botPromise = runBotForClient(connection, symbol);
         activeBots.set(accountId, botPromise);
 
