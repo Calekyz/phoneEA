@@ -1,6 +1,6 @@
 require('dotenv').config();
 const express = require('express');
-const MetaApi = require('metaapi.cloud-sdk');
+const { MetaApi } = require('metaapi.cloud-sdk');
 const { runBotForClient } = require('./ea-logic');
 const cors = require('cors');
 
